@@ -2,7 +2,7 @@ using DataFrames
 
 global FULL_OUTPUT::Bool = true;
 
-function calc_gini(N::DataFrame)::Float64
+function gini(N::DataFrame)::Float64
     global FULL_OUTPUT
     len = length(N[:, end])
     len_0 = length(N[N[:, end] .== 0, end])
@@ -14,19 +14,19 @@ function calc_gini(N::DataFrame)::Float64
     return res
 end
 
-function calc_gini(N::DataFrame, N1::DataFrame, N2::DataFrame)::Float64
+function gini(N::DataFrame, N1::DataFrame, N2::DataFrame)::Float64
     global FULL_OUTPUT
     len_N = length(N[:, end])
     len_N1 = length(N1[:, end])
     len_N2 = length(N2[:, end])
-    res = len_N1/len_N * calc_gini(N1) + len_N2/len_N * calc_gini(N2)
+    res = len_N1/len_N * gini(N1) + len_N2/len_N * gini(N2)
     if FULL_OUTPUT
         println("\tgini of split=$res")
     end
     return res
 end
 
-function calc_gini_k(N::DataFrame, k::Int64)::Float64
+function gini_k(N::DataFrame, k::Int64)::Float64
     global FULL_OUTPUT
     len = length(N[:, end])
     len_0 = length(N[N[:, end] .== 0, end])
@@ -38,12 +38,12 @@ function calc_gini_k(N::DataFrame, k::Int64)::Float64
     return res
 end
 
-function calc_gini_k(N::DataFrame, N1::DataFrame, N2::DataFrame, k::Int64)::Float64
+function gini_k(N::DataFrame, N1::DataFrame, N2::DataFrame, k::Int64)::Float64
     global FULL_OUTPUT
     len_N = length(N[:, end])
     len_N1 = length(N1[:, end])
     len_N2 = length(N2[:, end])
-    res = len_N1/len_N * calc_gini_k(N1, k) + len_N2/len_N * calc_gini_k(N2, k)
+    res = len_N1/len_N * gini_k(N1, k) + len_N2/len_N * gini_k(N2, k)
     if FULL_OUTPUT
         println("\tgini of split $k=$res")
     end
