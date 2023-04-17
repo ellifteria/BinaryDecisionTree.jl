@@ -7,7 +7,7 @@ function calc_gini(N::DataFrame)::Float64
     len = length(N[:, end])
     len_0 = length(N[N[:, end] .== 0, end])
     len_1 = length(N[N[:, end] .== 1, end])
-    res = 1 - (len_0 / (len))^2 - (len_1 / (len))^2
+    res = 1 - (len_0 / len)^2 - (len_1 / len)^2
     if FULL_OUTPUT
         println("\tgini=$res")
     end
@@ -28,9 +28,10 @@ end
 
 function calc_gini_k(N::DataFrame, k::Int64)::Float64
     global FULL_OUTPUT
+    len = length(N[:, end])
     len_0 = length(N[N[:, end] .== 0, end])
     len_1 = length(N[N[:, end] .== 1, end])
-    res = 1 - (len_0 / (len_0 + len_1))^k - (len_1 / (len_0 + len_1))^k
+    res = 1 - (len_0 / len)^k - (len_1 / len)^k
     if FULL_OUTPUT
         println("\tgini $k=$res")
     end
