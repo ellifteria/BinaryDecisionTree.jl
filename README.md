@@ -19,9 +19,9 @@ julia> build_binary_decision_tree(gini, df)
 In the Julia REPL:
 
 ```julia
-julia> gini_3(N) = gini_k(N, 3)
-julia> gini_3(N, N1, N2) = gini_k(N, N1, N2, 3)
 julia> include("BinaryDecisionTree.jl")
 julia> include("TestData.jl")
+julia> gini_3(N) = gini_k(N, 3)
+julia> gini_3(N, N1, N2) = gini_k(N, N1, N2, 3)
 julia> build_binary_decision_tree(gini_3, df) 
 ```
