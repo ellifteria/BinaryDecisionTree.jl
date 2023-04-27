@@ -8,7 +8,7 @@ OptionalIntIntTuple = Union{Tuple{Int64, Int64}, Nothing}
 
 mutable struct BinTreeNode
     split::OptionalString
-    gini::OptionalFloat64
+    err::OptionalFloat64
     class_division::OptionalIntIntTuple
     class::OptionalString
     node_0::Union{BinTreeNode, Nothing}
@@ -140,3 +140,27 @@ function build_binary_decision_tree(func::Function, N::DataFrame, ignore::Vector
     println()
     return BinTreeNode(split_name, curr_err, class_division, class, node_0, node_1)
 end
+
+function print_btn(node::Union{BinTreeNode, Nothing}, level::Int64)::Nothing
+    if isnothing(node)
+        println()
+        return
+    end
+
+    println(' '^(4 * level) * "|$(node.err), $(node.class_division); CLASS=$(node.class)")
+    println(' '^(4 * level) * "|split by $(node.split)")
+    if !isnothing(node.node_0)
+        println(' '^(4 * level) * "|==0")
+        print_btn(node.node_0, level + 1)
+    end
+    if !isnothing(node.node_1)
+        println(' '^(4 * level) * "|==1")
+        print_btn(node.node_1, level + 1)
+    end
+    return
+end
+
+function print_btn(node::BinTreeNode)::Nothing
+    print_btn(node, 0)
+end
+    
