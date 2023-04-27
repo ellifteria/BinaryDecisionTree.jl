@@ -2,6 +2,18 @@ using DataFrames
 
 global FULL_OUTPUT::Bool = true;
 
+OptionalString = Union{String, Nothing}
+OptionalFloat64 = Union{Float64, Nothing}
+
+mutable struct BinTreeNode
+    split::OptionalString
+    gini::OptionalFloat64
+    class::OptionalString
+    node_0::Union{BinTreeNode, Nothing}
+    node_1::Union{BinTreeNode, Nothing}
+end
+
+
 function gini(N::DataFrame)::Float64
     global FULL_OUTPUT
     len = length(N[:, end])
@@ -82,22 +94,23 @@ function calc_gains(func::Function, N::DataFrame, ignore::Vector{Int64} = Vector
     return max_gain_i
 end
 
-function build_binary_decision_tree(func, N::DataFrame, ignore::Vector{Int64} = Vector{Int64}())::Nothing
+function build_binary_decision_tree(func::Function, N::DataFrame, ignore::Vector{Int64} = Vector{Int64}())::BinTreeNode
     curr_err = func(N)
     if (curr_err == 0) || (length(N[end, :]) - 1 == length(ignore))
-        return
+        return BinTreeNode(nothing, curr_err, nothing, nothing, nothing)
     end
     index_for_split = calc_gains(func, N, ignore)
-    println("\n!!! $(names(N)[index_for_split]): branching here !!!")
+    split_name = names(N)[index_for_split]
+    println("\n!!! $(split_name): branching here !!!")
     N0 = N[N[:, index_for_split] .== 0, :]
     N1 =  N[N[:, index_for_split] .== 1, :]
     func(N, N0, N1)
-    println("\n↓↓↓ $(names(N)[index_for_split])=0: beginning branch ↓↓↓")
-    build_binary_decision_tree(func, N0, [ignore; index_for_split])
-    println("↑↑↑ $(names(N)[index_for_split])=0: branch complete ↑↑↑")
-    println("\n↓↓↓ $(names(N)[index_for_split])=1: beginning branch ↓↓↓")
-    build_binary_decision_tree(func, N1, [ignore; index_for_split])
-    println("↑↑↑ $(names(N)[index_for_split])=1: branch complete ↑↑↑")
+    println("\n↓↓↓ $(split_name)=0: beginning branch ↓↓↓")
+    node_0 = build_binary_decision_tree(func, N0, [ignore; index_for_split])
+    println("↑↑↑ $(split_name)=0: branch complete ↑↑↑")
+    println("\n↓↓↓ $(split_name)=1: beginning branch ↓↓↓")
+    node_1 = build_binary_decision_tree(func, N1, [ignore; index_for_split])
+    println("↑↑↑ $(split_name)=1: branch complete ↑↑↑")
     println()
-    return
+    return BinTreeNode(split_name, curr_err, nothing, node_0, node_1)
 end
