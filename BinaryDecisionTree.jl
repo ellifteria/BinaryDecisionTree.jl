@@ -4,10 +4,12 @@ global FULL_OUTPUT::Bool = true;
 
 OptionalString = Union{String, Nothing}
 OptionalFloat64 = Union{Float64, Nothing}
+OptionalIntIntTuple = Union{Tuple{Int64, Int64}, Nothing}
 
 mutable struct BinTreeNode
     split::OptionalString
     gini::OptionalFloat64
+    class_division::OptionalIntIntTuple
     class::OptionalString
     node_0::Union{BinTreeNode, Nothing}
     node_1::Union{BinTreeNode, Nothing}
@@ -94,10 +96,34 @@ function calc_gains(func::Function, N::DataFrame, ignore::Vector{Int64} = Vector
     return max_gain_i
 end
 
+function count_num_per_class(N::DataFrame)::Tuple{Int64, Int64}
+    len_0 = length(N[N[:, end] .== 0, end])
+    len_1 = length(N[N[:, end] .== 1, end])
+    return len_0, len_1
+end
+
+function determine_class(class_division::Tuple{Int64, Int64})::String
+    total = sum(class_division)
+    pct_0 = class_division[1] / total
+    pct_1 = class_division[2] / total
+    class::String = ""
+    if pct_0 > pct_1
+        class = "0: "
+        class = class * string(pct_0)
+    else
+        class = "1: "
+        class = class * string(pct_1)
+    end
+    return class
+end
+
+
 function build_binary_decision_tree(func::Function, N::DataFrame, ignore::Vector{Int64} = Vector{Int64}())::BinTreeNode
     curr_err = func(N)
+    class_division = count_num_per_class(N)
+    class = determine_class(class_division)
     if (curr_err == 0) || (length(N[end, :]) - 1 == length(ignore))
-        return BinTreeNode(nothing, curr_err, nothing, nothing, nothing)
+        return BinTreeNode(nothing, curr_err, class_division, class, nothing, nothing)
     end
     index_for_split = calc_gains(func, N, ignore)
     split_name = names(N)[index_for_split]
@@ -112,5 +138,5 @@ function build_binary_decision_tree(func::Function, N::DataFrame, ignore::Vector
     node_1 = build_binary_decision_tree(func, N1, [ignore; index_for_split])
     println("↑↑↑ $(split_name)=1: branch complete ↑↑↑")
     println()
-    return BinTreeNode(split_name, curr_err, nothing, node_0, node_1)
+    return BinTreeNode(split_name, curr_err, class_division, class, node_0, node_1)
 end
