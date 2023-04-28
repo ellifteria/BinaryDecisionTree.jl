@@ -9,9 +9,9 @@ A simple Julia script for creating binary decisions trees from a data frame.
 In the Julia REPL:
 
 ```julia
-julia> include("BinaryDecisionTree.jl"); include("TestData.jl")
-julia> using .BinaryDecisionTree; using .BDTTestData
-julia> tree = build_binary_decision_tree(gini, df)
+julia> include("BinaryDecisionTree.jl"); include("TestData.jl");
+julia> using .BinaryDecisionTree; using .BDTTestData;
+julia> tree = build_binary_decision_tree(gini, test_df, 0);
 julia> print_btn(tree)
 ```
 
@@ -45,11 +45,11 @@ Output:
 In the Julia REPL:
 
 ```julia
-julia> include("BinaryDecisionTree.jl"); include("TestData.jl")
-julia> using .BinaryDecisionTree; using .BDTTestData
-julia> gini_3(N) = gini_k(N, 3)
-julia> gini_3(N, N1, N2) = gini_k(N, N1, N2, 3)
-julia> tree = build_binary_decision_tree(gini_3, df)
+julia> include("BinaryDecisionTree.jl"); include("TestData.jl");
+julia> using .BinaryDecisionTree; using .BDTTestData;
+julia> gini_3(N) = gini_k(N, 3);
+julia> gini_3(N, N1, N2) = gini_k(N, N1, N2, 3);
+julia> tree = build_binary_decision_tree(gini_3, test_df, 0);
 julia> print_btn(tree)
 ```
 
