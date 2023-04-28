@@ -1,16 +1,22 @@
+module BinaryDecisionTree
+
 using DataFrames
+
+export FULL_OUTPUT, gini, gini_k, build_binary_decision_tree, print_btn
 
 global FULL_OUTPUT::Bool = true;
 
 OptionalString = Union{String, Nothing}
 OptionalFloat64 = Union{Float64, Nothing}
+OptionalInt64 = Union{Int64, Nothing}
 OptionalIntIntTuple = Union{Tuple{Int64, Int64}, Nothing}
 
 mutable struct BinTreeNode
     split::OptionalString
     err::OptionalFloat64
     class_division::OptionalIntIntTuple
-    class::OptionalString
+    class::OptionalInt64
+    class_likelihood::OptionalFloat64
     node_0::Union{BinTreeNode, Nothing}
     node_1::Union{BinTreeNode, Nothing}
 end
@@ -102,17 +108,14 @@ function count_num_per_class(N::DataFrame)::Tuple{Int64, Int64}
     return len_0, len_1
 end
 
-function determine_class(class_division::Tuple{Int64, Int64})::String
+function determine_class(class_division::Tuple{Int64, Int64})::Tuple{Int64, Float64}
     total = sum(class_division)
     pct_0 = class_division[1] / total
     pct_1 = class_division[2] / total
-    class::String = ""
     if pct_0 > pct_1
-        class = "0: "
-        class = class * string(pct_0)
+        return 0, pct_0
     else
-        class = "1: "
-        class = class * string(pct_1)
+        return 1, pct_1
     end
     return class
 end
@@ -121,9 +124,9 @@ end
 function build_binary_decision_tree(func::Function, N::DataFrame, ignore::Vector{Int64} = Vector{Int64}())::BinTreeNode
     curr_err = func(N)
     class_division = count_num_per_class(N)
-    class = determine_class(class_division)
+    class, class_likelihood = determine_class(class_division)
     if (curr_err == 0) || (length(N[end, :]) - 1 == length(ignore))
-        return BinTreeNode(nothing, curr_err, class_division, class, nothing, nothing)
+        return BinTreeNode(nothing, curr_err, class_division, class, class_likelihood, nothing, nothing)
     end
     index_for_split = calc_gains(func, N, ignore)
     split_name = names(N)[index_for_split]
@@ -138,7 +141,7 @@ function build_binary_decision_tree(func::Function, N::DataFrame, ignore::Vector
     node_1 = build_binary_decision_tree(func, N1, [ignore; index_for_split])
     println("↑↑↑ $(split_name)=1: branch complete ↑↑↑")
     println()
-    return BinTreeNode(split_name, curr_err, class_division, class, node_0, node_1)
+    return BinTreeNode(split_name, curr_err, class_division, class, class_likelihood, node_0, node_1)
 end
 
 function print_btn(node::Union{BinTreeNode, Nothing}, level::Int64)::Nothing
@@ -147,7 +150,8 @@ function print_btn(node::Union{BinTreeNode, Nothing}, level::Int64)::Nothing
         return
     end
 
-    println(' '^(4 * level) * "|$(node.err), $(node.class_division); CLASS=$(node.class)")
+    print(' '^(4 * level) * "|$(round(node.err, digits = 3)), $(node.class_division); ")
+    println("CLASS=$(node.class): $(round(node.class_likelihood*100, digits=3))%")
     println(' '^(4 * level) * "|split by $(node.split)")
     if !isnothing(node.node_0)
         println(' '^(4 * level) * "|==0")
@@ -164,3 +168,4 @@ function print_btn(node::BinTreeNode)::Nothing
     print_btn(node, 0)
 end
     
+end
